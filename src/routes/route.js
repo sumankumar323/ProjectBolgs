@@ -26,7 +26,7 @@ router.post("/creatememe", MemeController.createMeme);
 router.post("/users",UserController.createUser);
 router.post("/login",UserController.loginUser);
 router.get("/users/:userId",mid.middle1,UserController.getUserData);
-router.put("/user/:userId",mid.middle1,mid.middle2,UserController.updateUser);
+router.put("/users/:userId",mid.middle1,mid.middle2,UserController.updateUser);
 router.delete("/user/:userId",mid.middle1,mid.middle2,UserController.deleteUser);
 
 module.exports = router;

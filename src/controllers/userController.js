@@ -1,80 +1,93 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel");
+//CREATE API
 const createUser = async function (req, res) {
-  let data = req.body;
-  let saveData = await userModel.create(data);
-  console.log(req.newAtribute);
-  res.send({ msg: saveData });
+  try {
+    let data = req.body;
+    let savedData = await userModel.create(data);
+    console.log(req.newAtribute);
+    res.send({ msg: savedData });
+  } catch (error) {
+    res.send({ msg: savedData });
+  }
 };
+//LOGIN  WITH EMAIL AND PASSWORD
 const loginUser = async function (req, res) {
-  let userName = req.body.emailId;
-  let password = req.body.password;
-  let user = await userModel.findOne({ emailid: userName, password: password });
-  if (!user)
-    return res.satus(400).send({
-      status: false,
-      msg: "userNmae or the password is not corrtct",
-    });
+  try {
+    let userName = req.body.emailId;
+    let password = req.body.password;
 
-  let token = jwt.sign(
-    {
-      userId: user._id.toString(),
-      batch: "Radon",
-      organistion: "Functionup",
-    },
-    "functionup-radon"
-  );
-  res.setHeader("x-auth-token", token);
-  res.send({ status: true, token: token });
+    let user = await userModel.findOne({
+      emailId: userName,
+      password: password,
+    });
+    if (!user)
+      return res.status(400).send({
+        status: false,
+        msg: "username or the password is not corerct",
+      });
+
+    let token = jwt.sign(
+      {
+        userId: user._id.toString(),
+        batch: "Radon",
+        organisation: "FunctionUp",
+      },
+      "functionup-radon"
+    );
+    res.setHeader("x-auth-token", token);
+    res.send({ status: true, token: token });
+  } catch (error) {
+    res.status(400).send({ msg: error.message });
+  }
 };
-//GET ALL DATA
+//GET ALLDATA API
 const getUserData = async function (req, res) {
-  let token = req.header["x-Auth-tokem"];
-  if (!token) req.headers["x-auth-token"];
-  if (!token) return res.send({ status: falase, mag: "token must be present" });
+  let token = req.headers["x-Auth-token"];
+  if (!token) token = req.headers["x-auth-token"];
+  if (!token) return res.send({ status: false, msg: "token must be present" });
   console.log(token);
-  let decodedToken = jwt.verify(token, "function-radon");
+
+
+  let decodedToken = jwt.verify(token, "functionup-radon");
   if (!decodedToken)
-    return res.send({ status: false, msg: "Token is invalid" });
+    return res.send({ status: false, msg: "token is invalid" });
 
   let userId = req.params.userId;
   let userDetails = await userModel.findById(userId);
-  id(!userDetails);
-  return res.send({ status: false, msg: "NoSuchUserExists" });
+  if (!userDetails)
+    return res.send({ status: false, msg: "No such user exists" });
+
   res.send({ status: true, data: userDetails });
 };
-//UPDATE FUNCTION
+//UPDATE API
 const updateUser = async function (req, res) {
   let userId = req.params.userId;
   let user = await userModel.findById(userId);
   if (!user) {
-    return res.send({ status: true, data: updateUser });
+    return res.send({ status: false, msg: "No Such User Exists" });
   }
-  let userData = req.boby;
-  let updatedUser = await userModel.findOneAndUpdate(
-    { _Id: userId },
-    userData,
-    { new: true }
-  );
-  res.send({ status: true, data: updatedUser });
+  let userData = req.body;
+  let updatedUser = await userModel.findOneAndUpdate({ _id: userId }, userData,{new: true});
+  res.send({ status: updatedUser, data: updatedUser });
 };
-//DELETE FUNCTION
+//DELETE API
 const deleteUser = async function (req, res) {
   let userId = req.params.userId;
   let user = await userModel.findById(userId);
   if (!user) {
     return res.send({ status: false, msg: "No Such User Exists" });
   }
-  let deleteUser = await userModel.findOneAndUpdate(
+  let deleteUser = await userModel.findByIdAndUpdate(
     { _id: userId },
     { $set: { isDeleted: true } },
     { new: true }
   );
-  res.send({ status: true, data: deleteuser });
+  res.send({ status: true, data: deleteUser });
 };
-//MODULE EXPORT
+
 module.exports.createUser = createUser;
 module.exports.getUserData = getUserData;
-module.exports.loginUser = loginUser;
 module.exports.updateUser = updateUser;
+module.exports.loginUser = loginUser;
 module.exports.deleteUser = deleteUser;

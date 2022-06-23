@@ -1,32 +1,38 @@
 const express = require("express");
-const router = express.Router();
-const CowinController = require("../controllers/cowinController");
-const WeitherController = require("../controllers/weitherController");
-const MemeController = require("../controllers/memeController");
-const UserController = require("../controllers/userController");
-const mid = require("../middlewares/commonMiddlewares")
 
-router.get("/test-me", function (req, res) {
-  res.send("My first ever api!");
+const router = express.Router();
+
+const authorController = require("../controllers/authorController");
+const blogsController = require("../controllers/blogsController");
+const {authentication,authorization,} = require("../middlewares/authorization");
+
+// create author
+router.post("/authors", authorController.createAuthor);
+
+//create post login with jwt token as output
+router.post("/login", authorController.authorLogin);
+
+// create blogs
+router.post("/blogs", authentication, blogsController.createBlogs);
+
+// get all blogs by query
+router.get("/blogs", authentication, blogsController.getAllBlogs);
+
+// update blogs by query
+router.put("/blogs/:blogId",authentication,authorization,blogsController.updateBlogsById);
+//
+//// delete by id
+router.delete("/blogs/:blogId",authentication,authorization,blogsController.deleteBlogsById);
+
+// delete by query
+router.delete("/blogs", authentication,blogsController.deleteBolgsByQuery);
+
+// if api is invalid OR wrong URL
+router.all("/**", function (req, res) {
+  res.status(404).send({
+    status: false,
+    msg: "The api you request is not available",
+  });
 });
-//COWIN API
-router.get("/cowin/states", CowinController.getStates);
-router.get("/cowin/districtsInState/:stateId", CowinController.getDistricts);
-router.get("/cowin/getByPin", CowinController.getByPin);
-router.post("/cowin/getOtp", CowinController.getOtp);
-router.get("/cowin/getByDistrict", CowinController.getdistrictSessions);
-//WETHER API
-router.get("/weither", WeitherController.getWeatherAll);
-router.get("/weithertemp", WeitherController.getWeatherTemp);
-router.get("/weitherarr", WeitherController.arrangeByTemp);
-//MEME API
-router.get("/gatallmeme", MemeController.getAllMemes);
-router.post("/creatememe", MemeController.createMeme);
-//USER CREATE AND LOGIN
-router.post("/users",UserController.createUser);
-router.post("/login",UserController.loginUser);
-router.get("/users/:userId",mid.middle1,UserController.getUserData);
-router.put("/users/:userId",mid.middle1,mid.middle2,UserController.updateUser);
-router.delete("/user/:userId",mid.middle1,mid.middle2,UserController.deleteUser);
 
 module.exports = router;

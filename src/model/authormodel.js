@@ -1,11 +1,14 @@
 const mongoose = require("mongoose");
+const validator = require("validator")
+
+/////.......... CREATE AUTHOR...............................
 
 const authorSchema = new mongoose.Schema(
   {
     fname: {
       type: String,
       required: true,
-      trim: true, //remove space start and end point
+      trim: true,        //remove space start and end point
     },
     lname: {
       type: String,
@@ -21,7 +24,12 @@ const authorSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      trim: true, //remove space start and end point
+      trim: true, 
+      validate(value){
+        if(!validator.isEmail(value)){
+          throw new Error("Email is inValid")
+        }
+      }
     },
     password: {
       type: String,
